@@ -23,7 +23,8 @@ foreach($files as $file) {
 	                if ($text) {
 	                    echo "Original: <b>".$ob['text']."</b><br>";
 	                    //$text = "foo";
-	                    $text = file_get_contents("http://rhaegar/translate/translate.php?text=".urlencode($text)."&lang=$lang");
+		                $actual_link = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+		                $text = file_get_contents(fetchUrl() ."translate.php?text=".urlencode($text)."&lang=$lang");
 	                    if (preg_match("/Fatal error/",$text)) die("Error talking to google.");
 	                    echo "Replaced: <b>$text</b><br>";
 
@@ -53,4 +54,15 @@ foreach($files as $file) {
 	}
     $j++;
 
+}
+
+function fetchUrl() {
+	$protocol = (((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')	|| $_SERVER['SERVER_PORT'] == 443) ? 'https://' : 'http://');
+	$actual_link = "$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+	$url = explode("/",$actual_link);
+	$len = count($url);
+	if (preg_match("/.php/",$url[$len-1])) array_pop($url);
+	$actual_link = $protocol;
+	foreach($url as $part) $actual_link .= $part."/";
+	return $actual_link;
 }
